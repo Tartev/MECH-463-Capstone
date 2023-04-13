@@ -1,5 +1,7 @@
 # MECH-463-Capstone
 
+This README contains a brief overview of the code we generated in Winter 2023. The repository comprises 4 subfolders.
+
 Authors:
 
 - Griffin Burd, griffin.burd@mail.mcgill.ca       } contact if needed
@@ -14,7 +16,6 @@ Authors:
 
 Install all necessary packages. Alternatively, run the code in Google colab.
 
-This README contains a brief overview of the code we generated in Winter 2023. The repository comprises 4 subfolders.
 
 **Data**
 
