@@ -4,13 +4,13 @@ A place for all our pre and post-processing code for IMU data
 
 This README contains a brief overview of the code we generated in Winter 2023. The repository comprises 4 subfolders.
 
-**Data**
+***Data***
 
+**Collection**
 This folder contains the useful selection of the data we collected over the semester. This data was collected by mounting the Shimmer 3 IMU on our mediolateral shanks, and subequently walking on a treadmill at certain speeds. In some of our trials, we tried to emulate the gait of someone suffering from foot drop.
 
-
+**Naming**
 Our data uses the following naming convention:
-
 
 *SubjectFirstName_Trial#_autolabeled*
 
@@ -31,8 +31,9 @@ Note that trials 1-3 and 4-7 were collected during different DAQ sessions. The I
 
 
 
-**ML algorithms**
+***ML algorithms***
 
+**Structure**
 This folder contains both SVM and LSTM algorithms. SVM is implemented using scikit-learn, while LSTM is implemented using TensorFlow. However, the code for both is structured very similarly.
 
 At the top, data is imported - make sure these data are located in your working folder. K-fold validation will be performed on these data using leave-one-out training.
@@ -43,7 +44,7 @@ Error results are plotted. Ensure that the labels on these plots actually match 
 
 
 
-**Labeling**
+***Labeling***
 
 This folder contains the automatic labeling script. This will take an unlabeled .csv (Shimmer output), and add a labeled column. It will also plot the predicted labels so you can tell if it makes a big mistake.
 
