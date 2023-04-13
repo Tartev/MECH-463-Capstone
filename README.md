@@ -24,6 +24,8 @@ Our data uses the following naming convention:
 - *1 -> 3.5 km/h*
 - *2 -> 5 km/h*
 - *3 -> 6.5 km/h*
+- *3B -> 7.5 km/h*
+- 
 - *4 -> 2 km/h*
 - *5 -> 3 km/h*
 - *6 -> 2 km/h (simulated foot drop)*
@@ -35,7 +37,7 @@ Some of these datasets were processed to eliminate non-walking at the start and 
 
 If you choose to change the naming convention, be sure to update the algorithms where necessary so that they reference the correct file names.
 
-Note that trials 1-3 and 4-7 were collected during different DAQ sessions. The IMU was mounted on different legs (left/right) for these sessions, so using data across both requires flipping the sign on certain signals. This is performed somewhat clunkily in the ML algorithms. Both SVM and LSTM perform best when trained and tested on data acquired from an individual DAQ session (i.e., only trials 1-3 or 4-7).
+Note that trials 1-3 and 4-7 were collected during different DAQ sessions. The IMU was mounted on different legs (left/right) for these sessions, so using data across both requires flipping the sign on certain signals. This is performed somewhat clunkily in the ML algorithms. Both SVM and LSTM perform best when trained and tested on data acquired from an individual DAQ session (i.e., only trials 1-3B or 4-7).
 
 
 
