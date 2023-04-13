@@ -2,6 +2,10 @@
 A place for all our pre and post-processing code for IMU data
 
 
+**Requirements**
+
+Install all necessary packages using pip. Alternatively, run the code in Google colab.
+
 This README contains a brief overview of the code we generated in Winter 2023. The repository comprises 4 subfolders.
 
 **Data**
@@ -14,7 +18,7 @@ This folder contains the useful selection of the data we collected over the seme
 
 Our data uses the following naming convention:
 
-*SubjectFirstName_Trial#_autolabeled*
+*SubjectFirstName_Trial#*
 
 *Trial# indicates the trial speed and condition:*
 - *1 -> 3.5 km/h*
@@ -25,7 +29,9 @@ Our data uses the following naming convention:
 - *6 -> 2 km/h (simulated foot drop)*
 - *7 -> 3 km/h (simulated foot drop)*
 
-The last row were labeled using the automatic labeling script, found in the labeling folder.
+Some of these data is unlabeled, while others are labeled using the automatic labeling script. In the labeled data, the last column represents the labels of each datapoint (0=stance, 1=swing).
+
+Some of these datasets were processed to eliminate non-walking at the start and end of the trial. In these cases, time will not start at 0.
 
 If you choose to change the naming convention, be sure to update the algorithms where necessary so that they reference the correct file names.
 
