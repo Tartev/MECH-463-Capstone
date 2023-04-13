@@ -7,9 +7,11 @@ This README contains a brief overview of the code we generated in Winter 2023. T
 ***Data***
 
 **Collection**
+
 This folder contains the useful selection of the data we collected over the semester. This data was collected by mounting the Shimmer 3 IMU on our mediolateral shanks, and subequently walking on a treadmill at certain speeds. In some of our trials, we tried to emulate the gait of someone suffering from foot drop.
 
 **Naming**
+
 Our data uses the following naming convention:
 
 *SubjectFirstName_Trial#_autolabeled*
