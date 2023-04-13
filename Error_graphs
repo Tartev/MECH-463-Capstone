@@ -1,0 +1,500 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Mar 13 14:10:03 2023
+
+@author: vincenttarte
+"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+import csv 
+import matplotlib.pyplot as plt
+from scipy.signal import bessel, filtfilt
+import pandas as pd
+from scipy import signal
+
+
+#%%
+
+def closest_values(arr1, arr2):
+    TO = []
+    HS = []
+    for value in arr1:
+        closest_before = None
+        closest_after = None
+        for compare_value in arr2:
+            if compare_value >= value:
+                closest_after = compare_value
+                break
+            else:
+                closest_before = compare_value
+        if closest_before and closest_after != None:
+            TO.append(closest_before)
+            HS.append(closest_after)
+    return np.array(TO), np.array(HS)
+
+
+
+#%%
+
+def add_string_to_csv_at_indices(filename, arr, row_indices_TO,row_indices_HS, string_value):
+    with open(filename, 'r') as f_input, open('output.csv', 'w') as output_csv:
+        
+        swing = 0 
+        
+        reader = csv.reader(f_input,dialect = 'excel')
+        writer = csv.writer(output_csv)
+        
+        # add the new column to the header
+        
+        
+        # Iterate over the rows of the input CSV
+        for i, row in enumerate(reader):
+            
+            # Skip the first two rows (the header rows)
+            
+            if i < 1:
+                
+                writer.writerow(row)
+                
+                continue
+            
+            if i in row_indices_TO:
+                
+                row.append(int(arr[np.where(row_indices_TO == i)]))
+                swing = 1
+                
+            if i in row_indices_HS:
+                
+                row.append(int(arr[np.where(row_indices_HS == i)]))    
+                swing = 0 
+                
+            elif swing == 1:
+                
+                row.append('1')
+                
+            else:
+                
+                row.append('0')
+                
+            # Modify the row and write it to the output CSV
+    
+            writer.writerow(row)
+        
+        
+
+#%%
+
+#%%
+def local_minima_below_0(x):
+    """
+    Comparator function that finds local minima below 0 in the input array x.
+
+    Parameters:
+        x (numpy.ndarray): Input array.
+
+    Returns:
+        numpy.ndarray: Array of indices corresponding to the local minima below 0 in x.
+    """
+    minima = signal.argrelextrema(x, np.less, mode='clip')[0]
+    minima_below_0 = [i for i in minima if x[i] < 0]
+    return np.array(minima_below_0)
+
+#%%
+
+# Load data and set parameters
+
+filename = "Vincent_4P.csv"  #MAKE SURE TO CHANGE THE FILENAME
+# (files were processed\n using my old method of deleting row 2 and modifying column 1 )
+
+data = pd.read_csv(filename)
+
+gyroscope_values = data["Shimmer_6835_Gyro_Z_CAL"]
+
+time_stamp = data["time_stamp"]
+
+
+fs = 120.482  # Sampling rate
+
+fc = 10  # Cut-off frequency
+
+
+# Filter data
+
+b, a = bessel(2, fc/(fs/2), btype='low')  # 2nd order Bessel filter
+
+filtered_data = filtfilt(b, a, gyroscope_values)
+
+#filtered_data = gyroscope_values
+
+# Initialize variables
+
+# Find peaks(max).
+peak_indexes = signal.find_peaks(filtered_data, height = 100, distance = 40)
+peak_indexes = peak_indexes[0]
+ 
+# Find valleys(min).
+#valley_indexes = signal.argrelextrema(filtered_data, np.less, order = 1)
+#valley_indexes = valley_indexes[0]
+
+valley_indexes = local_minima_below_0(filtered_data)
+
+#find mid-stance local maxima
+
+MidStance_indexes = signal.argrelextrema(-filtered_data, np.less, order = 13)
+
+MidStance_indexes = MidStance_indexes[0]
+
+MidStance_index = []
+
+index = 0
+
+for i in range(0,len(MidStance_indexes)):
+     
+    if filtered_data[MidStance_indexes[i]] < 0:
+        
+        MidStance_index.append(MidStance_indexes[i])
+    
+    
+
+TO, HS = closest_values(peak_indexes,valley_indexes)
+
+
+arr = np.ones_like(TO)
+
+string_value = 'Swing?'
+
+time_stamp = time_stamp/fs
+
+add_string_to_csv_at_indices(filename, arr, TO, HS, string_value)
+
+REFERENCE_TO = TO 
+REFERENCE_HS = HS
+REFERENCE_MS = peak_indexes
+print(len(REFERENCE_TO))
+print(len(REFERENCE_HS))
+print(len(REFERENCE_MS))
+
+#%%
+
+#FEATURE BASED ALGORITHM
+
+# Load data and set parameters
+
+data = pd.read_csv(filename)
+
+gyroscope_values = data["Shimmer_6835_Gyro_Z_CAL"]
+
+time_stamp = data["time_stamp"]
+
+
+fs = 120.482  # Sampling rate
+
+fc = 10  # Cut-off frequency
+
+Tgiven = 25/1000  # Time window for IC detection (in ms)
+
+window = int(Tgiven /0.0083) #define window between MS an IC 
+
+window2 = int(300/(1000*0.0083)) #define a time window between IC an TO 
+
+# Filter data
+
+b, a = bessel(2, fc/(fs/2), btype='low')  # 2nd order Bessel filter
+
+filtered_data = filtfilt(b, a, gyroscope_values)
+
+#filtered_data = gyroscope_values
+# Initialize variables
+
+MSW = 0
+IC = 0
+TO = 0 
+
+#List of candidate point
+
+MSW_marker = []
+IC_marker = []
+TO_marker = []
+MSt_marker = []
+
+#Boolean value for MS, IC and TO detection
+
+MSW_var = 0 
+
+hold_TO = 1 
+
+hold_IC = 0 
+
+hold_MSt = 0 
+
+
+#define thresholds
+
+MS_threshold = 100 
+
+IC_threshold =  0 
+
+TO_threshold =  -40
+
+IC_window = 50
+
+TO_window = 100 
+
+
+for i in range(2, len(filtered_data)):
+    
+    #compute threshold and moving averages
+    
+    if len(MSW_marker)>=3:
+        
+        MS_threshold = sum(filtered_data[MSW_marker[-3:-1]])*1/6
+        
+    if len(IC_marker)>=3:
+        
+        IC_threshold = sum(filtered_data[IC_marker[-3:-1]])*1/20
+        
+    if len(TO_marker)>=3:
+        
+        TO_threshold = sum(filtered_data[TO_marker[-3:-1]])*0.5/3
+        
+        if TO_threshold >-40: 
+            
+            TO_threshold = -50
+        
+    if len(MSW_marker)>=2:
+        
+        
+        Gait_length = MSW_marker[-1] - MSW_marker[-2]
+        
+        if Gait_length > 250:
+            
+            Gait_length = 100
+        
+        TO_window = int(0.4 * Gait_length)
+        
+        IC_window = int(0.5 * Gait_length)
+    
+    # Compute difference between consecutive samples
+    
+    Dn = filtered_data[i] - filtered_data[i-1]
+    
+    Dn_min1 = filtered_data[i-1] - filtered_data[i-2]
+
+    # Search for MSW
+    append = 0 
+    
+    
+    if Dn_min1 > 0 and Dn < 0 and filtered_data[i] > MS_threshold and MSW_var == 0 and hold_TO ==1: 
+        
+        MSW = i
+        
+        MSW_marker.append(i)
+        
+        MSW_var = 1 
+
+        hold_TO = 0 
+
+        hold_IC = 0 
+
+        hold_MSt = 0 
+        
+    elif Dn > 0 and Dn_min1 < 0 :
+            
+        if MSW_var == 1 and filtered_data[i] < IC_threshold:
+            
+            for j in range(i, MSW+IC_window):
+                
+                if filtered_data[j] > filtered_data[j-1]:
+                    
+                    IC = j
+                    
+                    if filtered_data[j+1] > filtered_data[j]:
+                        
+                    
+                        if filtered_data[j+1] - filtered_data[IC] < 20:
+                            
+                            IC = j
+                            
+                            IC_marker.append(j)
+                            
+                            append = append + 1
+                            
+                            MSW_var = 0 
+
+                            hold_TO = 0 
+
+                            hold_IC = 1 
+
+                            hold_MSt = 0  
+                            
+                            if append == 1:
+                                
+                                #MSW_var = 0
+                                
+                                continue
+                        
+                            else:
+                            
+                                IC_marker.pop()
+                                
+                                #MSW_var = 0
+                            
+                                
+                                break
+                            
+    #Search for Mid Stance (MSt)    
+
+    if Dn_min1 > 0 and Dn < 0 and filtered_data[i] < 5 and hold_IC == 1 and filtered_data[i]>-60 and hold_MSt == 0 and i > IC_marker[-1]+5:
+        
+        
+        MSt_marker.append(i)
+        
+        MSW_var = 0 
+
+        hold_TO = 0 
+
+        hold_IC = 0 
+
+        hold_MSt = 1                     
+            
+    # Search for TO                    
+
+    if i > MSW+TO_window and filtered_data[i] < TO_threshold and i < len(filtered_data)-2 and hold_MSt ==1:
+        
+        TO = i
+        
+        if filtered_data[TO] > filtered_data[i+1]:
+            
+            TO = i + 1
+          
+            if filtered_data[TO] < filtered_data[TO+1]:
+                
+                TO_marker.append(TO)
+                
+                MSW_var = 0 
+
+                hold_TO = 1 
+
+                hold_IC = 0 
+
+                hold_MSt = 0
+                
+            else: 
+                
+                MSW_var = 0 
+                
+                IC = 0
+
+
+FBA_TO = np.array(TO_marker)
+FBA_HS = np.array(IC_marker)
+FBA_MSW = np.array(MSW_marker)
+print(len(FBA_TO))
+print(len(FBA_HS))
+print(len(FBA_MSW),'\n')
+
+
+
+#%%
+
+
+
+def remove_unwanted_values(ref_arr, mod_arr):
+    # initialize false positives array
+    false_positives = np.array([])
+
+    # initialize loop counter
+    i = 0
+
+    # loop through mod_arr and compare each value with ref_arr
+    while i < len(ref_arr):
+        if abs(mod_arr[i] - ref_arr[i]) > 10:
+            # if the difference is greater than 20, remove the value and append to false_positives
+            false_positives = np.append(false_positives, mod_arr[i])
+            mod_arr = np.delete(mod_arr, i)
+        else:
+            i += 1
+
+    # if the size of mod_arr is still larger than ref_arr, remove the extra values from the end
+    while len(mod_arr) > len(ref_arr):
+        false_positives = np.append(false_positives, mod_arr[-1])
+        mod_arr = np.delete(mod_arr, -1)
+
+    return mod_arr, false_positives
+
+def generate_boxplot(errors1, errors2):
+    fig, ax = plt.subplots()
+    outlier_range = 1.5
+    # Combine the two arrays into a list of arrays
+    errors = [errors1, errors2]
+
+    # Generate the boxplot
+    plt.boxplot(errors, labels=['TO Error', 'HS Error'],whis = 0.1,showbox = True)
+    
+
+    # Add labels and titles
+    ax.set_xlabel('Error')
+    ax.set_ylabel('Time delay (s)')
+    ax.set_title('Box Plot of Errors for FBA: Simulated Paretic Gait 3km/h')
+    
+    # Print median value and standard deviation
+    for i in range(len(errors)):
+        median = np.median(errors[i])
+        std_dev = np.std(errors[i])
+        print(f"Median of errors {i+1}: {median}")
+        print(f"Standard deviation of errors {i+1}: {std_dev}")
+
+    # Identify outliers
+    for i in range(len(errors)):
+        data = errors[i]
+        quartile1, quartile3 = np.percentile(data[:], [30, 50])
+        iqr = quartile3 - quartile1
+        lower_bound = quartile1 - 0.25*iqr
+        upper_bound = quartile3 + 0.25*iqr
+        outliers = [x for x in data if x < lower_bound or x > upper_bound]
+        print(f"Outliers for errors {i+1}: {outliers}")
+    print(quartile1,quartile3,iqr,'\n\n')
+
+    plt.plot
+       
+
+
+#new_FBA_TO, false_positives = remove_unwanted_values(REFERENCE_TO, FBA_TO)
+
+
+print(REFERENCE_TO)
+print(FBA_TO,'\n')
+
+REFERENCE_TO = np.delete(REFERENCE_TO,[0,1,2,-1]) #use this to clean up start/end of the arrays
+FBA_TO = np.delete(FBA_TO,[0]) #use this to clean up start/end of the arrays
+
+
+
+reference = (FBA_TO+1 - REFERENCE_TO)*(1/120) #compute difference, add 1 extra frame to FBA, convert to time (s) 
+print(reference)
+
+print(REFERENCE_HS)
+print(FBA_HS)
+
+REFERENCE_HS = np.delete(REFERENCE_HS,[1,-1,-2]) #use this to clean up start/end of the arrays
+#FBA_HS = np.delete(FBA_HS,[-1,-2]) #use this to clean up start/end of the arrays
+
+reference2 = (FBA_HS+1 - REFERENCE_HS )*(1/120)
+print(reference2)
+
+
+
+generate_boxplot(reference,reference2)
+
+quartile1, quartile3 = np.percentile(reference, [5, 10])
+print(quartile1,quartile3,'\n\n')
+
+
+#print('TO false positives:',len(false_positives))
+
+
+    
+    
+    
