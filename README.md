@@ -1,10 +1,14 @@
 # MECH-463-Capstone
-A place for all our pre and post-processing code for IMU data
 
+Authors:
+Griffin Burd, griffin.burd@mail.mcgill.ca       } contact if needed
+Vincent.Tarte, vincent.tarte@mail.mcgill.ca
+Mario Daccache, mario.daccache@mail.mcgill.ca
+Bennett Evans, bennett.evans@mail.mcgill.ca
 
 **Requirements**
 
-Install all necessary packages using pip. Alternatively, run the code in Google colab.
+Install all necessary packages. Alternatively, run the code in Google colab.
 
 This README contains a brief overview of the code we generated in Winter 2023. The repository comprises 4 subfolders.
 
