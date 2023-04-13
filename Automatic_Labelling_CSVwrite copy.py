@@ -35,6 +35,24 @@ def closest_values(arr1, arr2):
 
 #%%
 
+
+#%%
+def local_minima_below_0(x):
+    """
+    Comparator function that finds local minima below 0 in the input array x.
+
+    Parameters:
+        x (numpy.ndarray): Input array.
+
+    Returns:
+        numpy.ndarray: Array of indices corresponding to the local minima below 0 in x.
+    """
+    minima = signal.argrelextrema(x, np.less, mode='clip')[0]
+    minima_below_0 = [i for i in minima if x[i] < 0]
+    return np.array(minima_below_0)
+
+#%%
+
 def add_string_to_csv_at_indices(filename, arr, row_indices_TO,row_indices_HS, string_value):
     with open(filename, 'r') as f_input, open('output.csv', 'w') as output_csv:
         
@@ -85,7 +103,9 @@ def add_string_to_csv_at_indices(filename, arr, row_indices_TO,row_indices_HS, s
 
 # Load data and set parameters
 
-data = pd.read_csv("data_dev.csv")
+filename = "Griffin_4P.csv"
+
+data = pd.read_csv(filename)
 
 gyroscope_values = data["Shimmer_6835_Gyro_Z_CAL"]
 
@@ -112,12 +132,14 @@ peak_indexes = signal.find_peaks(filtered_data, height = 100, distance = 40)
 peak_indexes = peak_indexes[0]
  
 # Find valleys(min).
-valley_indexes = signal.argrelextrema(filtered_data, np.less, order = 1)
-valley_indexes = valley_indexes[0]
+#valley_indexes = signal.argrelextrema(filtered_data, np.less, order = 1)
+#valley_indexes =  signal.argrelextrema(filtered_data, is_local_min_below_0, mode='clip')[0]
+valley_indexes = local_minima_below_0(filtered_data)
+#valley_indexes = valley_indexes[0]
 
 #find mid-stance local maxima
 
-MidStance_indexes = signal.argrelextrema(-filtered_data, np.less, order = 1)
+MidStance_indexes = signal.argrelextrema(-filtered_data, np.less, order = 13)
 
 MidStance_indexes = MidStance_indexes[0]
 
@@ -128,7 +150,7 @@ index = 0
 for i in range(0,len(MidStance_indexes)):
      
     if filtered_data[MidStance_indexes[i]] < 0:
-        print('if')
+        
         MidStance_index.append(MidStance_indexes[i])
     
     
@@ -140,37 +162,37 @@ arr = np.ones_like(TO)
 
 string_value = 'Swing?'
 
-time_stamp = (1/120.482)*time_stamp
+time_stamp = time_stamp/fs
 
 
 # Plot data
-
+s = 20 
 plt.plot(time_stamp, filtered_data, label='Filtered Data')
-plt.scatter(time_stamp[peak_indexes], filtered_data[peak_indexes],\
-                        c='r', marker= 9, label='MS')
-plt.scatter(time_stamp[TO], filtered_data[TO],color = 'green', marker='^', label = 'TO')
-plt.scatter(time_stamp[HS], filtered_data[HS],color = 'm',marker='v',label = 'HS')
-plt.scatter(time_stamp[MidStance_index], filtered_data[MidStance_index],color = 'b',marker='.',label = 'MSt')
-#plt.plot(time_stamp, gyroscope_values, label=' Data')
 
+plt.scatter(time_stamp[peak_indexes], filtered_data[peak_indexes],\
+                      c='r', marker= 9, label='MS',s=s)
+plt.scatter(time_stamp[TO], filtered_data[TO],color = 'green', marker='^', label = 'TO',s=s)
+plt.scatter(time_stamp[HS], filtered_data[HS],color = 'm',marker='v',label = 'HS',s=s)
+plt.scatter(time_stamp[MidStance_index], filtered_data[MidStance_index],color = 'b',marker='.',label = 'MSt',s=s)
+#plt.plot(time_stamp, gyroscope_values, label=' Data')
 #plt.xlabel('ticks (120.482Hz)')
 
 plt.xlabel('time (s)')
-
-len = len(time_stamp)
-
-plt.xticks(np.arange(time_stamp[0],time_stamp[len-1], 1 ))
 
 
 plt.ylabel('Medio-lateral angular velocity (deg/s)')
 
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-add_string_to_csv_at_indices('data_dev.csv', arr, TO, HS, string_value)
+#plt.axis([4200/fs,4800/fs, -300,400])
 
+
+add_string_to_csv_at_indices(filename, arr, TO, HS, string_value)
+
+print(TO.size)
 print(TO)
-print(peak_indexes)
-print(HS)
+print(peak_indexes.size)
+print(HS.size)
 
-#pd.DataFrame(HS).to_clipboard()
+
 
