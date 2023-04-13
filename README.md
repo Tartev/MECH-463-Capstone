@@ -11,17 +11,17 @@ This folder contains the useful selection of the data we collected over the seme
 
 Our data uses the following naming convention:
 
-*
---SubjectFirstName_Trial#_autolabeled
 
-Trial# indicates the trial speed and condition:
-1 -> 3.5 km/h
-2 -> 5 km/h
-3 -> 6.5 km/h
-4 -> 2 km/h
-5 -> 3 km/h
-6 -> 2 km/h (simulated foot drop)
-7 -> 3 km/h (simulated foot drop)*
+*SubjectFirstName_Trial#_autolabeled*
+
+*Trial# indicates the trial speed and condition:*
+*1 -> 3.5 km/h*
+*2 -> 5 km/h*
+*3 -> 6.5 km/h*
+*4 -> 2 km/h*
+*5 -> 3 km/h*
+*6 -> 2 km/h (simulated foot drop)*
+*7 -> 3 km/h (simulated foot drop)*
 
 The last row were labeled using the automatic labeling script, found in the labeling folder.
 
