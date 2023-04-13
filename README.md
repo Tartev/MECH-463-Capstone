@@ -6,7 +6,7 @@ This README contains a brief overview of the code we generated in Winter 2023. T
 
 **Data**
 
-This folder contains the useful selection of the data we collected over the semester. It uses this (not very good) naming convention:
+This folder contains the useful selection of the data we collected over the semester. It uses this naming convention:
 
 SubjectFirstName_Trial#_autolabeled
 
