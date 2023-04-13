@@ -1,10 +1,14 @@
 # MECH-463-Capstone
 
 Authors:
-Griffin Burd, griffin.burd@mail.mcgill.ca       } contact if needed
-Vincent.Tarte, vincent.tarte@mail.mcgill.ca
-Mario Daccache, mario.daccache@mail.mcgill.ca
-Bennett Evans, bennett.evans@mail.mcgill.ca
+
+- Griffin Burd, griffin.burd@mail.mcgill.ca       } contact if needed
+
+- Vincent.Tarte, vincent.tarte@mail.mcgill.ca
+
+- Mario Daccache, mario.daccache@mail.mcgill.ca
+
+- Bennett Evans, bennett.evans@mail.mcgill.ca
 
 **Requirements**
 
